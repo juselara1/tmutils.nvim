@@ -24,4 +24,18 @@ M.join_lines = function (data)
 	return res
 end
 
+---Gets all the pattern matches in a text
+---@param text string
+---@param pattern string
+---@return string[]
+M.all_matches = function (text, pattern)
+	local matches = {}
+	local m_sta, m_end = string.find(text, pattern)
+	while m_sta ~= nil do
+		table.insert(matches, text:sub(m_sta, m_end))
+		m_sta, m_end = string.find(text, pattern, m_end)
+	end
+	return matches
+end
+
 return M
