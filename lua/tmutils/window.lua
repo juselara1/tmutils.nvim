@@ -23,6 +23,7 @@ M.tmux_window = function(opts, config)
 	local _ = vim.fn.jobstart(
 		"tmux list-panes",
 		{
+			stdout_buffered = true,
 			on_stdout = function (_, data, _)
 				local panes = F.parse_tmux_panes(data, true)
 				local recent_pane = 0
@@ -43,7 +44,7 @@ M.tmux_window = function(opts, config)
 					.. tostring(recent_pane)
                 )
 				vim.fn.system(("tmux switch-client -t %s"):format(cur_pane))
-				vim.g.tmutils_selected_pane = recent_pane
+				vim.g.tmutils_selected_pane = "%" .. tostring(recent_pane)
 			end
 		}
 	)
