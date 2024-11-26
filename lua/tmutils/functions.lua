@@ -38,4 +38,27 @@ M.all_matches = function (text, pattern)
 	return matches
 end
 
+---@alias TmuxPane {pane_id: string, pane_name: string}
+
+---Parses tmux list of panes into a lua table.
+---@param stdout string[]
+---@param single_window? boolean
+---@return TmuxPane[]
+M.parse_tmux_panes = function (stdout, single_window)
+	single_window = single_window or false
+	local name_pat = single_window and "%d+:" or  "%a+:%d+%.%d+"
+	local matches = {}
+	for _, line in ipairs(stdout) do
+		local id_st, id_en = string.find(line, "%%%d+")
+		local na_st, na_en = string.find(line, name_pat)
+		if (na_st ~= nil and na_en ~= nil and id_st ~= nil and id_en ~= nil) then
+			table.insert(matches, {
+				pane_id = line:sub(id_st, id_en),
+				pane_name = line:sub(na_st, na_en)
+			})
+		end
+	end
+	return matches
+end
+
 return M

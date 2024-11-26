@@ -61,7 +61,7 @@ end
 ---@alias CaptureAction fun(jobid: string, data: string[], event: string): nil
 
 ---@type table<string, CaptureAction>
-local CaptureActionProxy = {
+M.CaptureActionProxy = {
 	files = capture_action_files,
 	links = capture_action_links,
 	newbuffer = capture_action_newbuffer,
@@ -72,8 +72,7 @@ local CaptureActionProxy = {
 ---@param action string
 ---@return CaptureAction
 local function capture_action_factory(action)
-	---@type CaptureAction
-	local fn = CaptureActionProxy[action]
+	local fn = M.CaptureActionProxy[action]
 	if fn == nil then
 		error(string.format("Invalid action %s", action))
 	end
@@ -84,11 +83,17 @@ end
 ---@param opts {args: string}
 M.tmux_capture = function (opts)
 	local args = vim.split(opts.args, ' ')
-	if #args ~= 2 then
-		error("Expected 2 arguments")
+	local action = ""
+	local pane = ""
+	if #args > 2 then
+		error("Expected maximum 2 arguments")
+	elseif #args == 2 then
+		action = args[1]
+		pane = args[2]
+	elseif #args == 1 then
+		action = args[1]
+		pane = vim.g.tmutils_selected_pane
 	end
-	local pane = args[1]
-	local action = args[2]
 	local _ = vim.fn.jobstart(
 		string.format("tmux capture-pane -p -t %s", pane),
 		{
