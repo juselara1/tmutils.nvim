@@ -5,7 +5,7 @@ local window = require("tmutils.window")
 
 local M = {}
 
----@param conf {config: {selector: string}, window: {terminal: {direction: WindowDirection, size: float}}}
+---@param conf {selector: SelectorConfig, window: WindowConfig}
 M.setup = function (conf)
 	vim.api.nvim_create_user_command("TmutilsCapture", capture.tmux_capture, {
 		nargs = '?',
@@ -23,13 +23,20 @@ M.setup = function (conf)
 		nargs = '?', range=true,
 		desc = "Sends a range of lines to a tmux pane."
 	})
-	vim.api.nvim_create_user_command("TmutilsConfig", function (opts) config.tmux_config(opts, conf) end, {
+	vim.api.nvim_create_user_command("TmutilsConfig", function (opts) config.tmux_config(opts, conf.selector) end, {
 		nargs = '?',
 		desc = "Configures the tmux pane to use."
 	})
-	vim.api.nvim_create_user_command("TmutilsWindow", function (opts) window.tmux_window(opts, conf) end, {
+	vim.api.nvim_create_user_command("TmutilsWindow", function (opts) window.tmux_window(opts, conf.window) end, {
 		nargs = 1,
-		desc = "Creates a pane and configures it as the target pane."
+		desc = "Creates a pane and configures it as the target pane.",
+		complete = function (_, _, _)
+			local opts = {}
+			for name, _ in pairs(window.WindowActionProxy) do
+				table.insert(opts, name)
+			end
+			return opts
+		end
 	})
 end
 
