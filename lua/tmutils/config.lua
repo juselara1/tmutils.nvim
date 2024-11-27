@@ -3,8 +3,8 @@ local F = require("tmutils.functions")
 local M = {}
 
 ---Entrypoint for pane config.
----@param opts {args: string}
----@param config SelectorConfig
+---@param opts {args: string} # User command options.
+---@param config SelectorConfig # Selector configuration.
 M.tmux_config = function(opts, config)
 	if opts.args:len() == 0 then
 		local _ = vim.fn.jobstart(

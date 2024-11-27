@@ -3,7 +3,7 @@ local F = require("tmutils.functions")
 local M = {}
 
 ---Captures the text content of a tmux pane and takes an action with that content.
----@param opts {args: string, line1: integer, line2: integer}
+---@param opts {args: string, line1: integer, line2: integer} # User command options.
 M.tmux_send = function(opts)
 	local pane = ""
 	if opts.args:len() == 0 then

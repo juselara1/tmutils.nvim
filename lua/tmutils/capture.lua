@@ -3,14 +3,14 @@ local F = require("tmutils.functions")
 local M = {}
 
 ---Action to print the content in vim.
----@param data string[]
+---@param data string[] # Content of a pane
 local function capture_action_print(_, data, _)
 	local clean_data = F.remove_empty_lines(data)
 	vim.print(F.join_lines(clean_data))
 end
 
 ---Action to add the content in a new buffer
----@param data string[]
+---@param data string[] # Content of a pane
 local function capture_action_newbuffer(_, data, _)
 	local buf_num = vim.api.nvim_create_buf(false, true)
 	local clean_data = F.remove_empty_lines(data)
@@ -19,7 +19,7 @@ local function capture_action_newbuffer(_, data, _)
 end
 
 ---Action to filter links
----@param data string[]
+---@param data string[] # Content of a pane
 local function capture_action_links(_, data, _)
 	local clean_data = F.remove_empty_lines(data)
 	local text = F.join_lines(clean_data)
@@ -39,7 +39,7 @@ local function capture_action_links(_, data, _)
 end
 
 ---Action to filter files
----@param data string[]
+---@param data string[] # Content of a pane
 local function capture_action_files(_, data, _)
 	local clean_data = F.remove_empty_lines(data)
 	local text = F.join_lines(clean_data)
@@ -58,8 +58,10 @@ local function capture_action_files(_, data, _)
 	vim.cmd.buffer(buf_num)
 end
 
+---Interface that defines a capture action.
 ---@alias CaptureAction fun(jobid: string, data: string[], event: string): nil
 
+---Maps keys and capture actions.
 ---@type table<string, CaptureAction>
 M.CaptureActionProxy = {
 	files = capture_action_files,
@@ -69,8 +71,8 @@ M.CaptureActionProxy = {
 }
 
 ---Factory that creates the different actions on captured tmux content.
----@param action string
----@return CaptureAction
+---@param action string # The action to take.
+---@return CaptureAction # The Function that performs the action.
 local function capture_action_factory(action)
 	local fn = M.CaptureActionProxy[action]
 	if fn == nil then
@@ -80,7 +82,7 @@ local function capture_action_factory(action)
 end
 
 ---Captures the text content of a tmux pane and takes an action with that content.
----@param opts {args: string}
+---@param opts {args: string} # User command options.
 M.tmux_capture = function (opts)
 	local args = vim.split(opts.args, ' ')
 	local action = ""

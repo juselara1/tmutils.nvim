@@ -5,7 +5,8 @@ local window = require("tmutils.window")
 
 local M = {}
 
----@param conf {selector: SelectorConfig, window: WindowConfig}
+---Main plugin configuration.
+---@param conf {selector: SelectorConfig, window: WindowConfig} # Main plugin configuration
 M.setup = function (conf)
 	vim.api.nvim_create_user_command("TmutilsCapture", capture.tmux_capture, {
 		nargs = '?',

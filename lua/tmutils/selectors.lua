@@ -1,9 +1,10 @@
 local M = {}
 
+---Selector configuration.
 ---@alias SelectorConfig {selector: string}
 
----Selects a pane using telescope
----@param panes TmuxPane[]
+---Selects a pane using telescope.
+---@param panes TmuxPane[] # Parsed tmux panes.
 local function config_selector_telescope(panes)
 	local action_state = require("telescope.actions.state")
 	local actions = require("telescope.actions")
@@ -40,9 +41,9 @@ local ConfigSelectorProxy = {
 	telescope = config_selector_telescope,
 }
 
----Factory that creates selectors
----@param selector string
----@return ConfigSelector
+---Factory that creates selectors.
+---@param selector string # Selector to create.
+---@return ConfigSelector # Selector function.
 M.config_selector_factory = function(selector)
 	local fn = ConfigSelectorProxy[selector]
 	if fn == nil then

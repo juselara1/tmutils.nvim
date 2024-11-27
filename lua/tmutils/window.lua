@@ -1,6 +1,7 @@
 local F = require("tmutils.functions")
 local M = {}
 
+--- Defines the possible window directions.
 ---@alias WindowDirection
 ---| "horizontal"
 ---| "vertical"
@@ -8,7 +9,8 @@ local M = {}
 ---@alias TerminalConfig {direction: WindowDirection, size: float, commands: fun():string[]}
 ---@alias WindowConfig {terminal: TerminalConfig, repls: {[string]: TerminalConfig}}}
 
----@param config TerminalConfig
+---Creates a pane using certain configuration that runs some given commands.
+---@param config TerminalConfig # Terminal configuration.
 local function make_terminal(config)
 	local direction = config.direction == "vertical" and ' ' or " -h"
 	local axis = config.direction == "vertical" and '-y' or "-x"
@@ -50,15 +52,15 @@ local function make_terminal(config)
 	)
 end
 
----Creates a new terminal pane
----@param config WindowConfig
+---Creates a new plain terminal pane
+---@param config WindowConfig # Window configuration.
 local function window_action_terminal(_, config)
 	make_terminal(config.terminal)
 end
 
----Creates a new repl pane
----@param args string[]
----@param config WindowConfig
+---Creates a new repl pane.
+---@param args string[] # User command provided args.
+---@param config WindowConfig # Window configuration.
 local function window_action_repl(args, config)
 	if #args ~= 2 then
 		error("Expected the repl as an argument")
@@ -72,7 +74,7 @@ local function window_action_repl(args, config)
 end
 
 ---Deletes a tmux pane
----@param args string[]
+---@param args string[] # User command provided args (panes to delete), if empty, tries to delete `g:tmutils_selected_pane`.
 local function window_action_delete(args, _)
 	local panes = {}
 	if #args == 1 and vim.g.tmutils_selected_pane == nil then
@@ -90,6 +92,7 @@ local function window_action_delete(args, _)
 	end
 end
 
+---Proxy that maps keys and functions for window actions.
 ---@type table<string, CaptureAction>
 M.WindowActionProxy = {
 	terminal = window_action_terminal,
@@ -97,11 +100,12 @@ M.WindowActionProxy = {
 	repl = window_action_repl,
 }
 
+---Interface that defines a possible window action.
 ---@alias WindowAction fun(args: string[], config: WindowConfig): nil
 
 ---Factory that creates different actions
----@param action string
----@return WindowAction
+---@param action string # Window action to take.
+---@return WindowAction # Function that performs a window action.
 local function window_action_factory(action)
 	local fn = M.WindowActionProxy[action]
 	if fn == nil then
