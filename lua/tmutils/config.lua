@@ -28,4 +28,43 @@ M.tmux_config = function(opts, config)
 	vim.g.tmutils_selected_pane = args[1]
 end
 
+---Creates the default plugin config.
+---@param config {selector: SelectorConfig | nil, window: WindowConfig | nil} | nil # Main plugin configuration
+---@return {selector: SelectorConfig, window: WindowConfig}
+M.make_default_config = function(config)
+	local default_config = {
+		selector = {
+			selector = "nui"
+		},
+		window = {
+			terminal = {
+                direction = "vertical",
+                size = 20,
+				commands = function()
+					return {
+						("cd %s"):format(vim.fn.getcwd()),
+						"clear"
+					}
+				end
+            },
+			repls = {}
+		}
+	}
+	local valid_config = {}
+	if config == nil then
+		valid_config = default_config
+	else
+		local keys = {"selector", "window"}
+		for _, key in ipairs(keys) do
+			if config[key] == nil then
+				valid_config[key] = default_config[key]
+			else
+				valid_config[key] = config[key]
+			end
+		end
+	end
+
+	return valid_config
+end
+
 return M

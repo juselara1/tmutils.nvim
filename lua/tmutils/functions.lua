@@ -62,4 +62,27 @@ M.parse_tmux_panes = function (stdout, single_window)
 	return matches
 end
 
+---Prepares strings as tmux-compatible commands
+---@param str_in string # Input string to format
+---@return string # Formatted string
+M.str2cmd = function(str_in)
+	local new_str, _ = str_in:gsub('"', '\\"')
+	return new_str
+end
+
+---Generic type for function mapping
+
+---@generic T : any
+---@generic U : any
+---@param arr T[]
+---@param fn fun(arg: T): U
+---@return U[]
+M.map = function(arr, fn)
+	local res = {}
+	for _, val in ipairs(arr) do
+		table.insert(res, fn(val))
+	end
+	return res
+end
+
 return M

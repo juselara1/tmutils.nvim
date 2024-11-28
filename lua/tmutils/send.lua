@@ -16,9 +16,11 @@ M.tmux_send = function(opts)
 		pane = args[1]
 	end
 
-	local text = F.join_lines(vim.api.nvim_buf_get_lines(0, opts.line1 - 1, opts.line2, false))
+	local lines = F.map(vim.api.nvim_buf_get_lines(0, opts.line1 - 1, opts.line2, false), F.str2cmd)
+	local text = F.join_lines(lines)
+	vim.print(text)
 	local _ = vim.fn.jobstart(
-		string.format("tmux send -t %s '%s' Enter", pane, text),
+		string.format("tmux send -t %s \"%s\" Enter", pane, text),
 		{
 			on_stdout = nil,
 			stdout_buffered = true

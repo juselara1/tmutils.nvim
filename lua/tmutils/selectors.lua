@@ -34,11 +34,54 @@ local function config_selector_telescope(panes)
     }):find()
 end
 
+---Selects a pane using nui
+---@param panes TmuxPane[] # Parsed tmux panes.
+local function config_selector_nui(panes)
+	local Menu = require("nui.menu")
+
+	local options = {}
+	for _, pane in ipairs(panes) do
+		table.insert(options, Menu.item(("%s %s"):format(pane.pane_id, pane.pane_name)))
+	end
+
+	local menu = Menu({
+		position = "50%",
+		size = {width = 25, height = 5},
+		border = {
+			style = "single",
+			text = {
+				top = "Select tmux pane",
+				top_align = "center",
+			},
+		},
+		win_options = {
+			winhighlight = "Normal:Normal,FloatBorder:Normal",
+			},
+		}, {
+			lines = options,
+			max_width = 20,
+			keymap = {
+				focus_next = { "j", "<Down>", "<Tab>" },
+				focus_prev = { "k", "<Up>", "<S-Tab>" },
+				close = { "<Esc>", "<C-c>" },
+				submit = { "<CR>", "<Space>" },
+			},
+			on_close = function() end,
+			on_submit = function(item)
+				vim.g.tmutils_selected_pane = vim.split(item.text, ' ')[1]
+			end,
+		})
+
+	-- mount the component
+	menu:mount()
+end
+
 ---@alias ConfigSelector fun(panes: TmuxPane[]): nil
 
 ---@type table<string, ConfigSelector>
 local ConfigSelectorProxy = {
 	telescope = config_selector_telescope,
+	nui = config_selector_nui
 }
 
 ---Factory that creates selectors.
@@ -51,6 +94,5 @@ M.config_selector_factory = function(selector)
 	end
 	return fn
 end
-
 
 return M
