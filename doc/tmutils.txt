@@ -1,4 +1,5 @@
-*tmutils.txt* a Neovim plugin designed to streamline common development tasks that involve both `tmux` and Neovim
+*tmutils.txt* a Neovim plugin designed to streamline common development tasks that
+involve both `tmux` and Neovim.
 
    ██                         ██   ██  ██                              ██
   ░██                        ░██  ░░  ░██                             ░░
@@ -9,3 +10,325 @@
   ░░██  ███ ░██ ░██░░██████  ░░██ ░██ ███ ██████ ░██ ███  ░██  ░░██   ░██ ███ ░██ ░██
    ░░  ░░░  ░░  ░░  ░░░░░░    ░░  ░░ ░░░ ░░░░░░  ░░ ░░░   ░░    ░░    ░░ ░░░  ░░  ░░
 
+
+================================================================================
+Contents                                                        *tmutils-contents*
+
+		1. INTRODUCTION ................................. |tmutils-introduction|
+		2. INSTALLATION ................................. |tmutils-installation|
+		3. CONFIGURATION ................................ |tmutils-configuration|
+		4. USAGE ........................................ |tmutils-usage|
+		5. COMMANDS ..................................... |tmutils-commands|
+		5. DEFINITIONS .................................. |tmutils-definitions|
+
+================================================================================
+INTRODUCTION                                                *tmutils-introduction*
+
+`tmutils.nvim` is a Neovim plugin designed to streamline common development tasks
+that involve both `tmux` and Neovim. Key features include:
+
+- Sending a range of lines from Neovim to a `tmux` pane.
+- Collecting output from a `tmux` pane into Neovim.
+- Creating a configurable `tmux` pane to serve as a terminal.
+- Setting up and managing REPLs within `tmux` panes directly from Neovim.
+
+================================================================================
+INSTALLATION                                                *tmutils-installation*
+
+- `lazy`: to install this plugin using lazy:
+
+		>lua
+		{
+				"juselara1/tmutils.nvim",
+				dependencies = {
+						--NOTE: you only need one of these dependencies depending on the
+						--selector that you want to use, defaults to nui.
+						"MunifTanjim/nui.nvim",
+						--"nvim-telescope/telescope.nvim"
+				},
+				config = function()
+						require("tmutils").setup()
+				end
+				}
+<
+
+================================================================================
+CONFIGURATION                                              *tmutils-configuration*
+
+Let's see the default and minimal `tmutils` config:
+
+		>lua
+		require("tmutils").setup {
+				selector = {
+						selector = "nui"
+				},
+				window = {
+						terminal = {
+								direction = "vertical",
+								size = 20,
+								commands = function()
+										return {
+												("cd %s"):format(vim.fn.getcwd()),
+												"clear"
+										}
+										end
+						},
+						repls = {}
+				}
+		}
+<
+
+The configuration table has the following schema (review `LuaLS` type
+specification for the type annotations):
+
+		>lua
+		{
+				--Configuration for UI-based selection.
+				selector = {
+						--The backend used to select options.
+						selector = '"telescope" | "nui"'
+				},
+				--Configuration for window management commands.
+				window = {
+						--Configuration for the terminal pane.
+						terminal = {
+								--Direction in which to split the terminal pane.
+								direction = '"vertical" | "horizontal"',
+								--Relative size (in percentage) for the terminal pane.
+								size = 'number',
+								--Function that returns a list of commands to be executed
+								--when launching a new terminal pane.
+								commands = 'fun(): string[]'
+						},
+						repls = {
+								--Assign a key to the repl
+								["repl_1"] = {
+										--Direction in which to split the repl pane.
+										direction = '"vertical" | "horizontal"',
+										--Relative size (in percentage) for the repl pane.
+										size = 'number',
+										--Function that returns a list of commands to be executed
+										--when launching a new repl pane.
+										commands = 'fun(): string[]'
+								},
+								--Create other repls following the same structure.
+						}
+				}
+		}
+<
+
+================================================================================
+USAGE                                                              *tmutils-usage*
+
+Here are some common use cases for `tmutils`:
+
+EXTERNAL_PANES~
+
+1. Identify the target pane that you want to use, for example, from the target
+pane run the following command:
+
+		>sh
+		echo "${TMUX_PANE}"
+<
+
+2. Set up the target pane using |:TmutilsConfig|:
+
+		>vim
+		:TmutilsConfig "pane_id"
+<
+
+Alternatively, you can execute the |:TmutilsConfig| command without arguments
+and `tmutils` will use the configured selector (view |tmutils-configuration|)
+to graphically select a pane:
+
+		>vim
+		:TmutilsConfig
+
+NOTE: This creates the `g:tmutils_selected_pane` variable with the pane id,
+you can also manually set this variable with the pane id.
+<
+
+3. Send a range of lines to the pane using |:TmutilsSend|. For example, use
+the following command:
+
+		>vim
+		:159,160TmutilsSend
+<
+
+To send these lines to the pane:
+
+		>sh
+		echo "Hello from tmutils"
+		echo "Bye D:"
+<
+
+4. Capture the pane's content into a new buffer using |:TmutilsCapture|:
+
+		>vim
+		:TmutilsCapture newbuffer
+<
+
+TERMINAL_PANE~
+
+1. Create a new terminal pane using |:TmutilsWindow|:
+
+		>vim
+		:TmutilsWindow terminal
+<
+
+2. Send a range of lines to the terminal pane using |:TmutilsSend|, For
+example, use the following command:
+
+		>vim
+		:187,189TmutilsSend
+<
+
+To send these lines of code:
+
+		>sh
+		echo "To test internet connection"
+		echo "I will ping to 8.8.8.8"
+		ping "8.8.8.8"
+<
+
+3. Delete the terminal using |:TmutilsWindow|:
+
+		>vim
+		:TmutilsWindow delete
+<
+
+REPL_PANE~
+
+For this use case you'll need to configure a repl in the configuration, let's
+see an example using Python:
+
+		>lua
+		require("tmutils").setup {
+				selector = {
+						selector = "nui"
+						},
+				window = {
+						terminal = {
+                direction = "vertical",
+                size = 20,
+								commands = function()
+										return {
+												("cd %s"):format(vim.fn.getcwd()),
+												"clear"
+										}
+								end
+								},
+				repls = {
+						--Add this configuration for a basic python repl
+						python = {
+								direction = "vertical",
+								size = 20,
+								commands = function()
+										return {
+										("cd %s"):format(vim.fn.getcwd()),
+										"clear",
+										"python",
+										}
+								end
+								},
+						}
+				}
+		}
+<
+
+1. Create a new terminal pane using |:TmutilsWindow|, you should use the same
+key defined in the config as argument, in this case `python`:
+		
+		>vim
+		:TmutilsWindow repl python
+
+2. Send a range of lines to the terminal pane using |:TmutilsSend|, For
+example, use the following command:
+
+		>vim
+		:252,253TmutilsSend
+<
+
+To send these lines of code (removed formatting due to Python's identation rules)
+
+from pathlib import Path
+print(list(Path(".").glob("*")))
+
+3. Delete the terminal using |:TmutilsWindow|:
+
+		>vim
+		:TmutilsWindow delete
+<
+
+================================================================================
+COMMANDS                                                        *tmutils-commands*
+
+:TmutilsConfig [{pane}]                                           *:TmutilsConfig*
+
+		Setups the target pane to use with `tmutils`. You can optionally provide a
+		reference to a pane (|tmutils-definitions-pane|). If no arguments are
+		provided, a pop up window using the configured selector will be displayed
+		allowing to graphically select a pane. This internally configures the
+		`g:tmutils_selected_pane` variable.
+
+:{range}TmutilsSend [{pane}]                                        *:TmutilsSend*
+		
+		Sends a {range} of lines to a `tmux` pane. You can optionally specify the
+		target pane (|tmutils-definitions-pane|). If the pane is not provided
+		it'll use as pane the value from `g:tmutils_selected_pane`.
+
+:TmutilsCapture {action} [{pane}]                                *:TmutilsCapture*
+
+		Captures the text content from a `tmux` pane. You must specify an action
+		(|tmutils-definitions-capture-action|) over the captured text.
+		Additionally, you can optionally specify the target pane. If the pane is
+		not provided, it'll use as pane the value from `g:tmutils_selected_pane`.
+
+:TmutilsWindow {action} [{args}]                                  *:TmutilsWindow*
+		
+		Performs an {action} related to window management. You must specify an
+		action (|tmutils-definitions-window-action|). You can add additional
+		arguments {args} that may be required for individual sub-commands.
+
+
+================================================================================
+DEFINITIONS                                                  *tmutils-definitions*
+
+`pane`                                                    *tmutils-definitions-pane*
+
+		An identifier for a `tmux` pane, you can use the pane id (e.g. %1, %2, ...)
+		or use the pane name in format `{session_name}:{window_num}.{pane_num}`,
+		where `{session_name}` is the session name, `{window_num}` is the window
+		number within the session, and `{pane_num}` is the pane number within the
+		window.
+
+`capture-action`                                *tmutils-definitions-capture-action*
+
+		Defines what action to take on text collected from a tmux pane. Possible
+		options include:
+
+		- `print`: Prints the text as an Ex command output.
+		- `newbufer`: Adds all the text into a new scratchpad buffer.
+		- `files`: Uses a Lua pattern to find directory-like content and adds them
+			into a new scratchpad buffer.
+		- `links`: Uses a Lua pattern to find urls and adds them into a new
+			scratchpad buffer.
+
+`window-action`                                  *tmutils-definitions-window-action*
+		
+		Defines what action to perform on window-related tasks. Possible options
+		include:
+		
+		- `terminal`: Creates a new pane to act as a terminal. This automatically
+			sets the `g:tmutils_selected_pane` variable to reference the created
+			pane.
+		- `repl`: Creates a new pane to act as a repl. Requires an additional
+			argument with the repl key that must be defined in the configuration
+			(see |tmutils-configuration|). This automatically sets the
+			`g:tmutils_selected_pane` variable to reference the created pane.
+		- `delete`: Deletes the configured pane. Additionally, a list of
+			space-separated panes (|tmutils-definitions-pane|) can be used to delete
+			multiple `tmux` panes.
+
+
+vim:tw=80:ts=2:ft=help:norl:syntax=help:
