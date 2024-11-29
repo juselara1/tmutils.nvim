@@ -18,7 +18,6 @@ M.tmux_send = function(opts)
 
 	local lines = F.map(vim.api.nvim_buf_get_lines(0, opts.line1 - 1, opts.line2, false), F.str2cmd)
 	local text = F.join_lines(lines)
-	vim.print(text)
 	local _ = vim.fn.jobstart(
 		string.format("tmux send -t %s \"%s\"", pane, text),
 		{

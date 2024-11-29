@@ -66,7 +66,6 @@ local function window_action_repl(args, config)
 		error("Expected the repl as an argument")
 	end
 	local repl_conf = config.repls[args[2]]
-	vim.print(repl_conf)
 	if repl_conf == nil then
 		error(("Invalid repl: %s, please setup it in the window config."):format(args[2]))
 	end
