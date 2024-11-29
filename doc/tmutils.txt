@@ -45,10 +45,10 @@ INSTALLATION                                                *tmutils-installatio
 						--selector that you want to use, defaults to nui.
 						"MunifTanjim/nui.nvim",
 						--"nvim-telescope/telescope.nvim"
-				},
+						},
 				config = function()
 						require("tmutils").setup()
-				end
+						end
 				}
 <
 
@@ -61,7 +61,7 @@ Let's see the default and minimal `tmutils` config:
 		require("tmutils").setup {
 				selector = {
 						selector = "nui"
-				},
+						},
 				window = {
 						terminal = {
 								direction = "vertical",
@@ -70,12 +70,12 @@ Let's see the default and minimal `tmutils` config:
 										return {
 												("cd %s"):format(vim.fn.getcwd()),
 												"clear"
-										}
+												}
 										end
-						},
+								},
 						repls = {}
+						}
 				}
-		}
 <
 
 The configuration table has the following schema (review `LuaLS` type
@@ -87,7 +87,7 @@ specification for the type annotations):
 				selector = {
 						--The backend used to select options.
 						selector = '"telescope" | "nui"'
-				},
+						},
 				--Configuration for window management commands.
 				window = {
 						--Configuration for the terminal pane.
@@ -99,7 +99,7 @@ specification for the type annotations):
 								--Function that returns a list of commands to be executed
 								--when launching a new terminal pane.
 								commands = 'fun(): string[]'
-						},
+								},
 						repls = {
 								--Assign a key to the repl
 								["repl_1"] = {
@@ -110,11 +110,11 @@ specification for the type annotations):
 										--Function that returns a list of commands to be executed
 										--when launching a new repl pane.
 										commands = 'fun(): string[]'
-								},
+										},
 								--Create other repls following the same structure.
+								}
 						}
 				}
-		}
 <
 
 ================================================================================
@@ -215,25 +215,25 @@ see an example using Python:
 										return {
 												("cd %s"):format(vim.fn.getcwd()),
 												"clear"
-										}
-								end
+												}
+										end
 								},
-				repls = {
-						--Add this configuration for a basic python repl
-						python = {
-								direction = "vertical",
-								size = 20,
-								commands = function()
-										return {
-										("cd %s"):format(vim.fn.getcwd()),
-										"clear",
-										"python",
-										}
-								end
-								},
+						repls = {
+								--Add this configuration for a basic python repl
+								python = {
+										direction = "vertical",
+										size = 20,
+										commands = function()
+												return {
+												("cd %s"):format(vim.fn.getcwd()),
+												"clear",
+												"python",
+												}
+												end
+										},
+								}
 						}
 				}
-		}
 <
 
 1. Create a new terminal pane using |:TmutilsWindow|, you should use the same
@@ -277,7 +277,7 @@ using a triple backquote). Let's see the configuration using `lazy.nvim`:
 								custom_textobjects = {
 										---Code cell
 										x = { "```%S+%s()[^`]+()```" }
-								},
+										},
 								mappings = {
 										-- Main textobject prefixes
 										around = 'a',
@@ -285,12 +285,12 @@ using a triple backquote). Let's see the configuration using `lazy.nvim`:
 										},
 								search_method = "cover_or_next",
 								silent = true
-						}
-				end
-		}
+								}
+						end
+				}
 <
 
-4. Let's configure the repl in `tmutils`:
+2. Let's configure the repl in `tmutils`:
 
 		>lua
 		require("tmutils").setup {
@@ -306,30 +306,30 @@ using a triple backquote). Let's see the configuration using `lazy.nvim`:
 												("cd %s"):format(vim.fn.getcwd()),
 												"clear"
 										}
-								end
+										end
 								},
-				repls = {
-						--We configure here an IPython repl
-						ipython = {
-								direction = "vertical",
-								size = 20,
-								commands = function()
-										return {
-										("cd %s"):format(vim.fn.getcwd()),
-										"clear",
-										"ipython",
-										}
-								end
-								},
+						repls = {
+								--We configure here an IPython repl
+								ipython = {
+										direction = "vertical",
+										size = 20,
+										commands = function()
+												return {
+												("cd %s"):format(vim.fn.getcwd()),
+												"ipython",
+												"clear",
+												}
+												end
+										},
+								}
 						}
 				}
-		}
 <
 
 3. Now, we'll define some useful keybindings:
 
 		>lua
-		---<leader>r creates an IPython repl
+		--<leader>r creates an ipython repl
 		vim.keymap.set(
 				'n', "<leader>r", ":TmutilsWindow repl ipython<CR>",
 				{
@@ -337,17 +337,23 @@ using a triple backquote). Let's see the configuration using `lazy.nvim`:
 						desc="Creates an IPython repl"
 						}
 				)
-
-		---<leader>x sends a code cell to a repl
+		--<leader>x sends a code cell to the repl
 		vim.keymap.set(
-				'n', "<leader>x", "vix:TmutilsSend<CR>",
+				'n', "<leader>x", function ()
+						vim.cmd("norm vix")
+						local pos_l = vim.fn.getpos('.')
+						local pos_r = vim.fn.getpos('v')
+						vim.cmd(("%d,%dTmutilsSend"):format(pos_l[2], pos_r[2]))
+						vim.api.nvim_input("<Esc>")
+						end,
 				{
-						noremap = true, silent=true,
+						noremap = true, silent=false,
 						desc="Sends a code cell to a tmux pane"
 						}
 				)
 <
-4. Now, open or create a markdown file, you can define Python cells using the
+
+4. Open or create a markdown file, you can define Python cells using the
 following format:
 
 		>
@@ -357,15 +363,15 @@ following format:
 		```
 <
 
-4. We can populate the quickfix list using |:vimgrep| to find the start of all
+5. We can populate the quickfix list using |:vimgrep| to find the start of all
 the code cells. This allows an easy navigation between cells using |:cnext|
 and |:cprev|:
 
 		>vim
-		:vimgrep /\v```python/ %
+		:vim /\v```python/ %
 <
 
-5. Open a new repl using `<leader>r`, navigate between cells using `:cnext`
+6. Open a new repl using `<leader>r`, navigate between cells using `:cnext`
 and `:cprev`, and execute them using `<leader>x`.
 
 ================================================================================
