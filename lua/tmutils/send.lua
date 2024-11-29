@@ -20,7 +20,7 @@ M.tmux_send = function(opts)
 	local text = F.join_lines(lines)
 	vim.print(text)
 	local _ = vim.fn.jobstart(
-		string.format("tmux send -t %s \"%s\" Enter", pane, text),
+		string.format("tmux send -t %s \"%s\"", pane, text),
 		{
 			on_stdout = nil,
 			stdout_buffered = true

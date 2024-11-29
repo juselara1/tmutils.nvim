@@ -260,6 +260,114 @@ print(list(Path(".").glob("*")))
 		:TmutilsWindow delete
 <
 
+LITERATE_PROGRAMMING~
+
+Let's see a more advanced example for literate programming using markdown as
+the base file format and an IPython repl.
+
+1. We'll use the `mini.ai` plugin to define a custom text object `x`
+(`vix` will select all the code inside of a cell that's usually delimited
+using a triple backquote). Let's see the configuration using `lazy.nvim`:
+
+		>lua
+		{
+				"echasnovski/mini.nvim",
+				config = function()
+						require("mini.ai").setup {
+								custom_textobjects = {
+										---Code cell
+										x = { "```%S+%s()[^`]+()```" }
+								},
+								mappings = {
+										-- Main textobject prefixes
+										around = 'a',
+										inside = 'i',
+										},
+								search_method = "cover_or_next",
+								silent = true
+						}
+				end
+		}
+<
+
+4. Let's configure the repl in `tmutils`:
+
+		>lua
+		require("tmutils").setup {
+				selector = {
+						selector = "nui"
+						},
+				window = {
+						terminal = {
+                direction = "vertical",
+                size = 20,
+								commands = function()
+										return {
+												("cd %s"):format(vim.fn.getcwd()),
+												"clear"
+										}
+								end
+								},
+				repls = {
+						--We configure here an IPython repl
+						ipython = {
+								direction = "vertical",
+								size = 20,
+								commands = function()
+										return {
+										("cd %s"):format(vim.fn.getcwd()),
+										"clear",
+										"ipython",
+										}
+								end
+								},
+						}
+				}
+		}
+<
+
+3. Now, we'll define some useful keybindings:
+
+		>lua
+		---<leader>r creates an IPython repl
+		vim.keymap.set(
+				'n', "<leader>r", ":TmutilsWindow repl ipython<CR>",
+				{
+						noremap = true, silent=true,
+						desc="Creates an IPython repl"
+						}
+				)
+
+		---<leader>x sends a code cell to a repl
+		vim.keymap.set(
+				'n', "<leader>x", "vix:TmutilsSend<CR>",
+				{
+						noremap = true, silent=true,
+						desc="Sends a code cell to a tmux pane"
+						}
+				)
+<
+4. Now, open or create a markdown file, you can define Python cells using the
+following format:
+
+		>
+		```python
+		import os
+		import sys
+		```
+<
+
+4. We can populate the quickfix list using |:vimgrep| to find the start of all
+the code cells. This allows an easy navigation between cells using |:cnext|
+and |:cprev|:
+
+		>vim
+		:vimgrep /\v```python/ %
+<
+
+5. Open a new repl using `<leader>r`, navigate between cells using `:cnext`
+and `:cprev`, and execute them using `<leader>x`.
+
 ================================================================================
 COMMANDS                                                        *tmutils-commands*
 
