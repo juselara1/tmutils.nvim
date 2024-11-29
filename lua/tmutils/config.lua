@@ -1,10 +1,13 @@
 local selectors = require("tmutils.selectors")
 local F = require("tmutils.functions")
+
 local M = {}
+
+---@alias ConfigArgs {selector: Selector}
 
 ---Entrypoint for pane config.
 ---@param opts {args: string} # User command options.
----@param config SelectorConfig # Selector configuration.
+---@param config ConfigArgs # Selector arguments.
 M.tmux_config = function(opts, config)
 	if opts.args:len() == 0 then
 		local _ = vim.fn.jobstart(
@@ -13,7 +16,13 @@ M.tmux_config = function(opts, config)
 				---@param data string[]
 				on_stdout = function(_, data, _)
 					local matches = F.parse_tmux_panes(data)
-					selectors.config_selector_factory(config.selector)(matches)
+					config.selector(
+						F.map(matches, F.pane2str),
+						"Select a pane:",
+						function (selected_opt)
+							vim.g.tmutils_selected_pane = vim.split(selected_opt, ' ')[1]
+						end
+						)
 				end,
 				stdout_buffered = true
 			}
@@ -29,12 +38,12 @@ M.tmux_config = function(opts, config)
 end
 
 ---Creates the default plugin config.
----@param config {selector: SelectorConfig | nil, window: WindowConfig | nil} | nil # Main plugin configuration
----@return {selector: SelectorConfig, window: WindowConfig}
+---@param config {config: ConfigArgs, window: WindowConfig} | nil # Main plugin configuration
+---@return {config: ConfigArgs, window: WindowConfig}
 M.make_default_config = function(config)
 	local default_config = {
 		selector = {
-			selector = "nui"
+			selector = selectors.nui_selector
 		},
 		window = {
 			terminal = {
@@ -50,21 +59,10 @@ M.make_default_config = function(config)
 			repls = {}
 		}
 	}
-	local valid_config = {}
 	if config == nil then
-		valid_config = default_config
-	else
-		local keys = {"selector", "window"}
-		for _, key in ipairs(keys) do
-			if config[key] == nil then
-				valid_config[key] = default_config[key]
-			else
-				valid_config[key] = config[key]
-			end
-		end
+		return default_config
 	end
-
-	return valid_config
+	return config
 end
 
 return M

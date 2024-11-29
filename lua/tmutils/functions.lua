@@ -14,8 +14,8 @@ M.remove_empty_lines = function (data)
 end
 
 ---Joins multiple lines into a single one.
----@param data string[] Input lines.
----@return string Joined lines.
+---@param data string[] # Input lines.
+---@return string # Joined lines.
 M.join_lines = function (data)
 	local res = ""
 	for _, line in ipairs(data) do
@@ -24,7 +24,7 @@ M.join_lines = function (data)
 	return res
 end
 
----Gets all the pattern matches in a text
+---Gets all the pattern matches in a text.
 ---@param text string # Input text.
 ---@param pattern string # Pattern to match.
 ---@return string[] # Matches.
@@ -38,7 +38,7 @@ M.all_matches = function (text, pattern)
 	return matches
 end
 
----Structured parsed tmux pane
+---Structured parsed tmux pane.
 ---@alias TmuxPane {pane_id: string, pane_name: string}
 
 ---Parses tmux list of panes into a lua table.
@@ -62,21 +62,27 @@ M.parse_tmux_panes = function (stdout, single_window)
 	return matches
 end
 
----Prepares strings as tmux-compatible commands
----@param str_in string # Input string to format
----@return string # Formatted string
+---Formats pane as string.
+---@param pane TmuxPane # Input pane.
+---@return string # Formatted pane.
+M.pane2str = function(pane)
+	return ("%s %s"):format(pane.pane_id, pane.pane_name)
+end
+
+---Prepares strings as tmux-compatible commands.
+---@param str_in string # Input string to format.
+---@return string # Formatted string.
 M.str2cmd = function(str_in)
 	local new_str, _ = str_in:gsub('"', '\\"')
 	return new_str
 end
 
----Generic type for function mapping
-
----@generic T : any
----@generic U : any
----@param arr T[]
----@param fn fun(arg: T): U
----@return U[]
+---Maps a function to an array.
+---@generic T : any # Input array element type.
+---@generic U : any # Output array element type.
+---@param arr T[] # Input array.
+---@param fn fun(arg: T): U # Function to map.
+---@return U[] # Mapped array.
 M.map = function(arr, fn)
 	local res = {}
 	for _, val in ipairs(arr) do
