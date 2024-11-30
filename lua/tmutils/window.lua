@@ -66,11 +66,30 @@ end
 
 ---Deletes a tmux pane
 ---@param args string[] # User command provided args (panes to delete), if empty, tries to delete `g:tmutils_selected_pane`.
-local function window_action_delete(args, _)
-	local panes = {}
+---@param conf Config # Plugin configuration.
+local function window_action_delete(args, conf)
 	if #args == 1 and vim.g.tmutils_selected_pane == nil then
-		error("Expected the pane name/id or a configured pane at g:tmutils_selected_pane")
-	elseif #args > 1 then
+		local _ = vim.fn.jobstart(
+			"tmux list-panes -a",
+			{
+				---@param data string[]
+				on_stdout = function(_, data, _)
+					local matches = F.parse_tmux_panes(data)
+					conf.selector.selector(
+						F.map(matches, F.pane2str),
+						"Select a pane:",
+						function (selected_opt)
+							vim.fn.system("tmux kill-pane -t " .. vim.split(selected_opt, ' ')[1])
+						end
+						)
+				end,
+				stdout_buffered = true
+			}
+		)
+	end
+
+	local panes = {}
+	if #args > 1 then
 		for i = 2,#args do
 			table.insert(panes, args[i])
 		end
