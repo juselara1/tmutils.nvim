@@ -67,4 +67,20 @@ M.nui_selector = function (opts, message, callback)
 	menu:mount()
 end
 
+---Select an option using fzf
+---@param opts string[] # Options to select.
+---@param message string # Message that is displayed to the user.
+---@param callback fun(selected_opt: string): nil # Function to call on the selected option.
+M.fzf_selector = function(opts, message, callback)
+	local fzf = require("fzf")
+	coroutine.wrap(function()
+		local result = fzf.fzf(opts, "--nth 1", {title=message})
+		if result then
+			callback(result[1])
+		end
+	end
+	)()
+end
+
+
 return M
