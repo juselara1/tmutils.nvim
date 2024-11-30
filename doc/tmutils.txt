@@ -58,9 +58,10 @@ CONFIGURATION                                              *tmutils-configuratio
 Let's see the default and minimal `tmutils` config:
 
 		>lua
+		local selectors = require("tmutils.selectors")
 		require("tmutils").setup {
 				selector = {
-						selector = "nui"
+						selector = selectors.nui_selector
 						},
 				window = {
 						terminal = {
@@ -85,8 +86,15 @@ specification for the type annotations):
 		{
 				--Configuration for UI-based selection.
 				selector = {
-						--The backend used to select options.
-						selector = '"telescope" | "nui"'
+						--The backend used to select options, you can pick a default
+						--selector from the `selectors` module or create a custom one. 
+						selector = [[
+						fun(
+								opts: string[],
+								message: string,
+								callback: fun(selected_opt: string): nil
+								): nil
+						]]
 						},
 				--Configuration for window management commands.
 				window = {
@@ -131,28 +139,11 @@ pane run the following command:
 		echo "${TMUX_PANE}"
 <
 
-2. Set up the target pane using |:TmutilsConfig|:
-
-		>vim
-		:TmutilsConfig "pane_id"
-<
-
-Alternatively, you can execute the |:TmutilsConfig| command without arguments
-and `tmutils` will use the configured selector (view |tmutils-configuration|)
-to graphically select a pane:
-
-		>vim
-		:TmutilsConfig
-
-NOTE: This creates the `g:tmutils_selected_pane` variable with the pane id,
-you can also manually set this variable with the pane id.
-<
-
-3. Send a range of lines to the pane using |:TmutilsSend|. For example, use
+2. Send a range of lines to the pane using |:TmutilsSend|. For example, use
 the following command:
 
 		>vim
-		:159,160TmutilsSend
+		:152,153TmutilsSend
 <
 
 To send these lines to the pane:
@@ -162,11 +153,26 @@ To send these lines to the pane:
 		echo "Bye D:"
 <
 
-4. Capture the pane's content into a new buffer using |:TmutilsCapture|:
+NOTE: The |:TmutilsSend| command will attempt to get the pane from the
+first argument (e.g., `:152,153:TmutilsSend %1`). If no arguments are provided
+it will attempt locate the pane specified in the `g:tmutils_selected_pane`
+variable (which you can set using the |:TmutilsConfig| command). Otherwise,
+the configured selector (see |tmutils-definitions-selectors|) will be used to
+graphically choose a pane.
+
+3. Capture the pane's content into a new buffer using |:TmutilsCapture|:
 
 		>vim
 		:TmutilsCapture newbuffer
 <
+
+NOTE: The |:TmutilsCapture| command will attempt to get the pane from the
+second argument after the action (see |tmutils-definitions-capture-action|),
+for example, `:TmutilsCapture newbuffer %1`. If no argument is specified, it
+will attempt to locate the pane specified in the `g:tmutils_selected_pane` 
+variable (which you can set using the |:TmutilsConfig| command). Otherwise,
+the configured selector (see |tmutils-definitions-selectors|) will be used to
+graphically choose a pane.
 
 TERMINAL_PANE~
 
@@ -176,11 +182,14 @@ TERMINAL_PANE~
 		:TmutilsWindow terminal
 <
 
+NOTE: This sets the `g:tmutils_selected_pane` variable to reference the
+created pane.
+
 2. Send a range of lines to the terminal pane using |:TmutilsSend|, For
 example, use the following command:
 
 		>vim
-		:187,189TmutilsSend
+		:194,196TmutilsSend
 <
 
 To send these lines of code:
@@ -203,9 +212,10 @@ For this use case you'll need to configure a repl in the configuration, let's
 see an example using Python:
 
 		>lua
+		local selectors = require("tmutils.selectors")
 		require("tmutils").setup {
 				selector = {
-						selector = "nui"
+						selector = selectors.nui_selector
 						},
 				window = {
 						terminal = {
@@ -236,17 +246,21 @@ see an example using Python:
 				}
 <
 
-1. Create a new terminal pane using |:TmutilsWindow|, you should use the same
-key defined in the config as argument, in this case `python`:
-		
+1. Create a new terminal pane using |:TmutilsWindow|:
+
 		>vim
-		:TmutilsWindow repl python
+		:TmutilsWindow repl
+<
+
+NOTE: The |:TmutilsWindow| command will attempt to get the repl key from the
+second argument after `repl`. Otherwise, it'll use a selector (see 
+|tmutils-definitions-selectors|) to graphically choose which repl to use.
 
 2. Send a range of lines to the terminal pane using |:TmutilsSend|, For
 example, use the following command:
 
 		>vim
-		:252,253TmutilsSend
+		:268,269TmutilsSend
 <
 
 To send these lines of code (removed formatting due to Python's identation rules)
@@ -295,7 +309,7 @@ using a triple backquote). Let's see the configuration using `lazy.nvim`:
 		>lua
 		require("tmutils").setup {
 				selector = {
-						selector = "nui"
+						selector = selectors.nui_selector
 						},
 				window = {
 						terminal = {
@@ -329,12 +343,12 @@ using a triple backquote). Let's see the configuration using `lazy.nvim`:
 3. Now, we'll define some useful keybindings:
 
 		>lua
-		--<leader>r creates an ipython repl
+		--<leader>r creates a repl
 		vim.keymap.set(
-				'n', "<leader>r", ":TmutilsWindow repl ipython<CR>",
+				'n', "<leader>r", ":TmutilsWindow repl<CR>",
 				{
 						noremap = true, silent=true,
-						desc="Creates an IPython repl"
+						desc="Shows a menu to select and launch a repl"
 						}
 				)
 		--<leader>x sends a code cell to the repl
@@ -381,15 +395,18 @@ COMMANDS                                                        *tmutils-command
 
 		Setups the target pane to use with `tmutils`. You can optionally provide a
 		reference to a pane (|tmutils-definitions-pane|). If no arguments are
-		provided, a pop up window using the configured selector will be displayed
-		allowing to graphically select a pane. This internally configures the
-		`g:tmutils_selected_pane` variable.
+		provided, a pop up window using the configured selector 
+		(|tmutils-definitions-selectors|) will be displayed allowing to graphically
+		select a pane. This internally configures the `g:tmutils_selected_pane`
+		variable.
 
 :{range}TmutilsSend [{pane}]                                        *:TmutilsSend*
 		
 		Sends a {range} of lines to a `tmux` pane. You can optionally specify the
 		target pane (|tmutils-definitions-pane|). If the pane is not provided
-		it'll use as pane the value from `g:tmutils_selected_pane`.
+		it'll use as pane the value from `g:tmutils_selected_pane`. Otherwise, it
+		will use the configured selector (|tmutils-definitions-selectors|) to 
+		graphically choose a pane.
 
 :TmutilsCapture {action} [{pane}]                                *:TmutilsCapture*
 
@@ -397,6 +414,8 @@ COMMANDS                                                        *tmutils-command
 		(|tmutils-definitions-capture-action|) over the captured text.
 		Additionally, you can optionally specify the target pane. If the pane is
 		not provided, it'll use as pane the value from `g:tmutils_selected_pane`.
+		Otherwise, it will use the configured selector
+		(|tmutils-definitions-selectors|) to graphically choose a pane.
 
 :TmutilsWindow {action} [{args}]                                  *:TmutilsWindow*
 		
@@ -436,13 +455,39 @@ DEFINITIONS                                                  *tmutils-definition
 		- `terminal`: Creates a new pane to act as a terminal. This automatically
 			sets the `g:tmutils_selected_pane` variable to reference the created
 			pane.
-		- `repl`: Creates a new pane to act as a repl. Requires an additional
-			argument with the repl key that must be defined in the configuration
-			(see |tmutils-configuration|). This automatically sets the
+		- `repl`: Creates a new pane to act as a repl. You can add an optional
+			second argument with the repl key that must be defined in the
+			configuration (see |tmutils-configuration|). if no second argument is
+			provided, the configured selector (see |tmutils-definitions-selectors|)
+			will be used to graphically choose a repl. This automatically sets the
 			`g:tmutils_selected_pane` variable to reference the created pane.
 		- `delete`: Deletes the configured pane. Additionally, a list of
 			space-separated panes (|tmutils-definitions-pane|) can be used to delete
 			multiple `tmux` panes.
 
+`selectors`                                         *tmutils-definitions-selectors*
+
+		Defines a tool to graphically select between different options. A selector
+		is a Lua function that implements the following interface:
+
+		>lua
+		fun(
+				opts: string[], message: string,
+				callback: fun(selected_opt: string): nil
+				): nil
+<
+		
+		- `opts`: Possible options.
+		- `message`: Message to prompt.
+		- `callback`: Function that takes the chosen option and performs an action.
+
+		Some default selectors can be found in the `tmutils.selectors` module,
+		this includes:
+
+		- `tmutils.selectors.nui_selector`: uses `MunifTanjim/nui.nvim` as a menu
+			to select options.
+		- `tmutils.selectors.telescope_selector`: uses 
+			`nvim-telescope/telescope.nvim` to fuzzy find between the different
+			options.
 
 vim:tw=80:ts=2:ft=help:norl:syntax=help:

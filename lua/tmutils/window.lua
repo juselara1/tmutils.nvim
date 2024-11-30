@@ -54,17 +54,24 @@ end
 ---@param args string[] # User command provided args.
 ---@param conf Config # Plugin configuration.
 local function window_action_repl(args, conf)
-	if #args ~= 2 then
-		error("Expected the repl as an argument")
+	if #args == 2 then
+		local repl_conf = conf.window.repls[args[2]]
+		if repl_conf == nil then
+			error(("Invalid repl: %s, please set it up in the window config."):format(args[2]))
+		end
+		make_terminal(repl_conf)
+	else
+		local opts = {}
+		for k, _ in pairs(conf.window.repls) do
+			table.insert(opts, k)
+		end
+		conf.selector.selector(opts, "Select a repl:", function (selected_opt)
+			make_terminal(conf.window.repls[selected_opt])
+		end)
 	end
-	local repl_conf = conf.window.repls[args[2]]
-	if repl_conf == nil then
-		error(("Invalid repl: %s, please setup it in the window config."):format(args[2]))
-	end
-	make_terminal(repl_conf)
 end
 
----Deletes a tmux pane
+---Deletes a tmux pane.
 ---@param args string[] # User command provided args (panes to delete), if empty, tries to delete `g:tmutils_selected_pane`.
 ---@param conf Config # Plugin configuration.
 local function window_action_delete(args, conf)

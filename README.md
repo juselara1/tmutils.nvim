@@ -47,9 +47,10 @@ For a more detailed guide and documentation, review the help page: `:help tmutil
 Let's see the default and minimal `tmutils` config:
 
 ```lua
+local selectors = require("tmutils.selectors")
 require("tmutils").setup {
     selector = {
-        selector = "nui"
+        selector = selectors.nui_selector
         },
     window = {
         terminal = {
@@ -74,7 +75,13 @@ The configuration table has the following schema (review `LuaLS` type specificat
     --Configuration for UI-based selection.
     selector = {
         --The backend used to select options.
-        selector = '"telescope" | "nui"'
+        selector = [[
+        fun(
+            opts: string[],
+            message: string,
+            callback: fun(selected_opt: string): nil
+            ): nil
+        ]]
         },
     --Configuration for window management commands.
     window = {
@@ -180,9 +187,10 @@ examples of it:
     2. Let's configure the repl in `tmutils`:
 
         ```lua
+        local selectors = require("tmutils.selectors")
         require("tmutils").setup {
             selector = {
-                selector = "nui"
+                selector = selectors.nui_selector
                 },
             window = {
                 terminal = {
@@ -216,12 +224,12 @@ examples of it:
     3. Now, we'll define some useful keybindings:
 
         ```lua
-        --<leader>r creates an ipython repl
+        --<leader>r creates a repl
         vim.keymap.set(
-            'n', "<leader>r", ":TmutilsWindow repl ipython<CR>",
+            'n', "<leader>r", ":TmutilsWindow repl<CR>",
             {
                 noremap = true, silent=true,
-                desc="Creates an IPython repl"
+                desc="Shows a menu to select and launch a repl"
                 }
             )
         --<leader>x sends a code cell to the repl
