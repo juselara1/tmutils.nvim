@@ -3,12 +3,11 @@ local F = require("tmutils.functions")
 
 local M = {}
 
----@alias ConfigArgs {selector: Selector}
 
 ---Entrypoint for pane config.
 ---@param opts {args: string} # User command options.
----@param config ConfigArgs # Selector arguments.
-M.tmux_config = function(opts, config)
+---@param conf Config # Plugin config.
+M.tmux_config = function(opts, conf)
 	if opts.args:len() == 0 then
 		local _ = vim.fn.jobstart(
 			"tmux list-panes -a",
@@ -16,7 +15,7 @@ M.tmux_config = function(opts, config)
 				---@param data string[]
 				on_stdout = function(_, data, _)
 					local matches = F.parse_tmux_panes(data)
-					config.selector(
+					conf.selector.selector(
 						F.map(matches, F.pane2str),
 						"Select a pane:",
 						function (selected_opt)
@@ -38,8 +37,8 @@ M.tmux_config = function(opts, config)
 end
 
 ---Creates the default plugin config.
----@param config {config: ConfigArgs, window: WindowConfig} | nil # Main plugin configuration
----@return {config: ConfigArgs, window: WindowConfig}
+---@param config Config | nil # Main plugin configuration
+---@return Config
 M.make_default_config = function(config)
 	local default_config = {
 		selector = {

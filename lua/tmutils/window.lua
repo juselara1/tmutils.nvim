@@ -1,14 +1,6 @@
 local F = require("tmutils.functions")
 local M = {}
 
---- Defines the possible window directions.
----@alias WindowDirection
----| "horizontal"
----| "vertical"
-
----@alias TerminalConfig {direction: WindowDirection, size: float, commands: fun():string[]}
----@alias WindowConfig {terminal: TerminalConfig, repls: {[string]: TerminalConfig}}}
-
 ---Creates a pane using certain configuration that runs some given commands.
 ---@param config TerminalConfig # Terminal configuration.
 local function make_terminal(config)
@@ -53,19 +45,19 @@ local function make_terminal(config)
 end
 
 ---Creates a new plain terminal pane
----@param config WindowConfig # Window configuration.
-local function window_action_terminal(_, config)
-	make_terminal(config.terminal)
+---@param conf Config # Plugin configuration.
+local function window_action_terminal(_, conf)
+	make_terminal(conf.window.terminal)
 end
 
 ---Creates a new repl pane.
 ---@param args string[] # User command provided args.
----@param config WindowConfig # Window configuration.
-local function window_action_repl(args, config)
+---@param conf Config # Plugin configuration.
+local function window_action_repl(args, conf)
 	if #args ~= 2 then
 		error("Expected the repl as an argument")
 	end
-	local repl_conf = config.repls[args[2]]
+	local repl_conf = conf.window.repls[args[2]]
 	if repl_conf == nil then
 		error(("Invalid repl: %s, please setup it in the window config."):format(args[2]))
 	end
@@ -100,7 +92,7 @@ M.WindowActionProxy = {
 }
 
 ---Interface that defines a possible window action.
----@alias WindowAction fun(args: string[], config: WindowConfig): nil
+---@alias WindowAction fun(args: string[], config: Config): nil
 
 ---Factory that creates different actions
 ---@param action string # Window action to take.
@@ -114,8 +106,8 @@ local function window_action_factory(action)
 end
 
 ---Performs an action over a tmux window
----@param opts {args: string}
----@param config WindowConfig
+---@param opts {args: string} # User command arguments.
+---@param config Config # Plugin configuration.
 M.tmux_window = function(opts, config)
 	if opts.args:len() == 0 then
 		error("Expected one argument")
