@@ -43,8 +43,10 @@ INSTALLATION                                                *tmutils-installatio
 				dependencies = {
 						--NOTE: you only need one of these dependencies depending on the
 						--selector that you want to use, defaults to nui.
+
 						"MunifTanjim/nui.nvim",
 						--"nvim-telescope/telescope.nvim"
+						--"vijaymarupudi/nvim-fzf"
 						},
 				config = function()
 						require("tmutils").setup()
@@ -489,5 +491,7 @@ DEFINITIONS                                                  *tmutils-definition
 		- `tmutils.selectors.telescope_selector`: uses 
 			`nvim-telescope/telescope.nvim` to fuzzy find between the different
 			options.
+		- `tmutls.selectors.fzf_selector`: uses `vijaymarupudi/nvim-fzf` to fuzzy
+			find between different options.
 
 vim:tw=80:ts=2:ft=help:norl:syntax=help:

@@ -32,8 +32,10 @@ For a more detailed guide and documentation, review the help page: `:help tmutil
         dependencies = {
             --NOTE: you only need one of these dependencies depending on the
             --selector that you want to use, defaults to nui.
+
             "MunifTanjim/nui.nvim",
             --"nvim-telescope/telescope.nvim"
+            --"vijaymarupudi/nvim-fzf"
             },
         config = function()
             require("tmutils").setup()
