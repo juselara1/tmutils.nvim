@@ -42,7 +42,7 @@ end
 M.make_default_config = function(config)
 	local default_config = {
 		selector = {
-			selector = selectors.nui_selector
+			selector = selectors.vim_ui_selector
 		},
 		window = {
 			terminal = {

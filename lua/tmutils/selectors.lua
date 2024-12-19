@@ -10,7 +10,12 @@ local M = {}
 M.vim_ui_selector = function (opts, message, callback)
 	vim.ui.select(opts, {
 		prompt = message,
-	}, callback)
+	},
+	function (selected_opt)
+		if F.isin(selected_opt, opts) then
+			callback(selected_opt)
+		end
+	end)
 end
 
 ---Select an option using telescope

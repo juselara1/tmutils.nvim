@@ -91,4 +91,18 @@ M.map = function(arr, fn)
 	return res
 end
 
+---Validates if a element is in array
+---@generic T : any # Type of the element to compare.
+---@param elem T # Element to compare.
+---@param arr T[] # Input array.
+---@return boolean # Valid condition.
+M.isin = function(elem, arr)
+	for _, arr_i in ipairs(arr) do
+		if arr_i == elem then
+			return true
+		end
+	end
+	return false
+end
+
 return M
