@@ -31,9 +31,9 @@ For a more detailed guide and documentation, review the help page: `:help tmutil
         "juselara1/tmutils.nvim",
         dependencies = {
             --NOTE: you only need one of these dependencies depending on the
-            --selector that you want to use, defaults to nui.
+            --selector that you want to use, defaults to vim.ui.
 
-            "MunifTanjim/nui.nvim",
+            --"MunifTanjim/nui.nvim",
             --"nvim-telescope/telescope.nvim"
             --"vijaymarupudi/nvim-fzf"
             },
@@ -52,7 +52,7 @@ Let's see the default and minimal `tmutils` config:
 local selectors = require("tmutils.selectors")
 require("tmutils").setup {
     selector = {
-        selector = selectors.nui_selector
+        selector = selectors.vim_ui_selector
         },
     window = {
         terminal = {

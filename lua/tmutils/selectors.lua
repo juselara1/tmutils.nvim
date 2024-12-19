@@ -3,6 +3,16 @@ local M = {}
 
 ---@alias Selector fun(opts: string[], message: string, callback: fun(selected_opt: string): nil): nil
 
+---Select an option using default vim.ui
+---@param opts string[] # Options to select.
+---@param message string # Message that is displayed to the user.
+---@param callback fun(selected_opt: string): nil # Function to call on the selected option.
+M.vim_ui_selector = function (opts, message, callback)
+	vim.ui.select(opts, {
+		prompt = message,
+	}, callback)
+end
+
 ---Select an option using telescope
 ---@param opts string[] # Options to select.
 ---@param message string # Message that is displayed to the user.
