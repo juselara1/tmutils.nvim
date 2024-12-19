@@ -30,8 +30,9 @@ For a more detailed guide and documentation, review the help page: `:help tmutil
     {
         "juselara1/tmutils.nvim",
         dependencies = {
-            --NOTE: you only need one of these dependencies depending on the
-            --selector that you want to use, defaults to vim.ui.
+            --NOTE: you can optionally add one of these dependencies if you
+            --want to use a custom selector different from the default vim.ui
+            --selector.
 
             --"MunifTanjim/nui.nvim",
             --"nvim-telescope/telescope.nvim"
