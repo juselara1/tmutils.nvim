@@ -56,6 +56,7 @@ end
 local function window_action_repl(args, conf)
 	if #args == 2 then
 		local repl_conf = conf.window.repls[args[2]]
+		vim.g.tmutils_selected_repl = repl_conf.syntax
 		if repl_conf == nil then
 			error(("Invalid repl: %s, please set it up in the window config."):format(args[2]))
 		end
@@ -66,7 +67,9 @@ local function window_action_repl(args, conf)
 			table.insert(opts, k)
 		end
 		conf.selector.selector(opts, "Select a repl:", function (selected_opt)
-			make_terminal(conf.window.repls[selected_opt])
+			local repl_conf = conf.window.repls[selected_opt]
+			vim.g.tmutils_selected_repl = repl_conf.syntax
+			make_terminal(repl_conf)
 		end)
 	end
 end

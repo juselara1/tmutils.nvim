@@ -2,6 +2,7 @@ local capture = require("tmutils.capture")
 local send = require("tmutils.send")
 local config = require("tmutils.config")
 local window = require("tmutils.window")
+local scratch = require("tmutils.scratch")
 
 local M = {}
 
@@ -14,13 +15,16 @@ local M = {}
 ---| "vertical"
 
 ---Defines terminal configuration.
----@alias TerminalConfig {direction: WindowDirection, size: float, commands: fun():string[]}
+---@alias TerminalConfig {direction: WindowDirection, size: float, syntax: string, commands: fun():string[]}
 
 ---Defines window command configuration.
 ---@alias WindowConfig {terminal: TerminalConfig, repls: {[string]: TerminalConfig}}}
 
+---Defines scratch configuration.
+---@alias ScratchConfig {width: float, height: float}
+
 ---Defines plugin configuration
----@alias Config {selector: SelectorConfig, window: WindowConfig}
+---@alias Config {selector: SelectorConfig, window: WindowConfig, scratch: ScratchConfig}
 
 ---Main plugin configuration.
 ---@param conf Config | nil # Main plugin configuration
@@ -56,6 +60,10 @@ M.setup = function (conf)
 			end
 			return opts
 		end
+	})
+	vim.api.nvim_create_user_command("TmutilsScratch", function (opts) scratch.toggle_scratch(opts, valid_conf) end, {
+		nargs = 0,
+		desc = "Toggles a tmutils scratch."
 	})
 end
 
