@@ -6,10 +6,12 @@ State = {
 }
 
 ---Creates a scratch window and opens it.
----@param config Config # Plugin configuration.
-local function create_scratch_win(config)
-	local width = config.scratch.width or math.floor(vim.o.columns * 0.8)
-	local height = config.scratch.height or math.floor(vim.o.lines * 0.8)
+---@param conf Config | {} # Plugin configuration.
+local function create_scratch_win(conf)
+	conf = conf or {}
+	local scratch_conf = conf.scratch or {}
+	local width = scratch_conf.width or math.floor(vim.o.columns * 0.8)
+	local height = scratch_conf.height or math.floor(vim.o.lines * 0.8)
 
 	local col = math.floor((vim.o.columns - width) / 2)
 	local row = math.floor((vim.o.lines - height) / 3)
@@ -40,10 +42,10 @@ local function create_scratch_win(config)
 end
 
 ---Toggles a tmutils scratch.
----@param config Config # Plugin configuration.
-M.toggle_scratch = function(_, config)
+---@param conf Config | {} # Plugin configuration.
+M.toggle_scratch = function(_, conf)
 	if not vim.api.nvim_win_is_valid(State.scratch_win) then
-		create_scratch_win(config)
+		create_scratch_win(conf)
 	else
 		vim.api.nvim_win_hide(State.scratch_win)
 	end

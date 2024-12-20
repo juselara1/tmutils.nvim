@@ -1,4 +1,5 @@
 local F = require("tmutils.functions")
+local selectors = require("tmutils.selectors")
 
 local M = {}
 
@@ -96,9 +97,11 @@ end
 
 ---Captures the text content of a tmux pane and takes an action with that content.
 ---@param opts {args: string} # User command options.
----@param conf Config # Plugin configuration
+---@param conf Config | {} # Plugin configuration
 M.tmux_capture = function (opts, conf)
 	local args = vim.split(opts.args, ' ')
+	local selector_conf = conf.selector or {selector = selectors.vim_ui_selector}
+	local selector = selector_conf.selector or selectors.vim_ui_selector
 	if #args > 2 then
 		error("Expected maximum two arguments")
 	elseif #args == 2 then
@@ -112,7 +115,7 @@ M.tmux_capture = function (opts, conf)
 				---@param data string[]
 				on_stdout = function(_, data, _)
 					local matches = F.parse_tmux_panes(data)
-					conf.selector.selector(
+					selector(
 						F.map(matches, F.pane2str),
 						"Select a pane:",
 						function (selected_opt)

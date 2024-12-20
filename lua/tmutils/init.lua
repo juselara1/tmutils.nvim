@@ -7,7 +7,7 @@ local scratch = require("tmutils.scratch")
 local M = {}
 
 ---Defines config command configuration.
----@alias SelectorConfig {selector: Selector}
+---@alias SelectorConfig {selector: Selector | nil}
 
 --- Defines the possible window directions.
 ---@alias WindowDirection
@@ -15,22 +15,21 @@ local M = {}
 ---| "vertical"
 
 ---Defines terminal configuration.
----@alias TerminalConfig {direction: WindowDirection, size: float, syntax: string, commands: fun():string[]}
+---@alias TerminalConfig {direction: WindowDirection | nil, size: float | nil, syntax: string | nil, commands: (fun():string[]) | nil}
 
 ---Defines window command configuration.
----@alias WindowConfig {terminal: TerminalConfig, repls: {[string]: TerminalConfig}}}
+---@alias WindowConfig {terminal: TerminalConfig | nil, repls: {[string]: TerminalConfig} | nil}
 
 ---Defines scratch configuration.
----@alias ScratchConfig {width: float, height: float}
+---@alias ScratchConfig {width: float | nil, height: float | nil}
 
 ---Defines plugin configuration
----@alias Config {selector: SelectorConfig, window: WindowConfig, scratch: ScratchConfig}
+---@alias Config {selector: SelectorConfig | nil, window: WindowConfig | nil, scratch: ScratchConfig | nil}
 
 ---Main plugin configuration.
----@param conf Config | nil # Main plugin configuration
+---@param conf Config | {} # Main plugin configuration
 M.setup = function (conf)
-	local valid_conf = config.make_default_config(conf)
-	vim.api.nvim_create_user_command("TmutilsCapture", function (opts) capture.tmux_capture(opts, valid_conf) end, {
+	vim.api.nvim_create_user_command("TmutilsCapture", function (opts) capture.tmux_capture(opts, conf) end, {
 		nargs = 1,
 		desc = "Captures the text content from a tmux pane and takes an action on it.",
 		complete = function (_, _, _)
@@ -42,15 +41,15 @@ M.setup = function (conf)
 		end
 		}
     )
-	vim.api.nvim_create_user_command("TmutilsSend", function (opts) send.tmux_send(opts, valid_conf) end, {
-		nargs = '?', range=true,
-		desc = "Sends a range of lines to a tmux pane."
-	})
-	vim.api.nvim_create_user_command("TmutilsConfig", function (opts) config.tmux_config(opts, valid_conf) end, {
+	vim.api.nvim_create_user_command("TmutilsConfig", function (opts) config.tmux_config(opts, conf) end, {
 		nargs = '?',
 		desc = "Configures the tmux pane to use."
 	})
-	vim.api.nvim_create_user_command("TmutilsWindow", function (opts) window.tmux_window(opts, valid_conf) end, {
+	vim.api.nvim_create_user_command("TmutilsSend", function (opts) send.tmux_send(opts, conf) end, {
+		nargs = '?', range=true,
+		desc = "Sends a range of lines to a tmux pane."
+	})
+	vim.api.nvim_create_user_command("TmutilsWindow", function (opts) window.tmux_window(opts, conf) end, {
 		nargs = 1,
 		desc = "Creates a pane and configures it as the target pane.",
 		complete = function (_, _, _)
@@ -61,7 +60,7 @@ M.setup = function (conf)
 			return opts
 		end
 	})
-	vim.api.nvim_create_user_command("TmutilsScratch", function (opts) scratch.toggle_scratch(opts, valid_conf) end, {
+	vim.api.nvim_create_user_command("TmutilsScratch", function (opts) scratch.toggle_scratch(opts, conf) end, {
 		nargs = 0,
 		desc = "Toggles a tmutils scratch."
 	})
