@@ -18,6 +18,7 @@
 - Collecting output from a `tmux` pane into Neovim.
 - Creating a configurable `tmux` pane to serve as a terminal.
 - Setting up and managing REPLs within `tmux` panes directly from Neovim.
+- Creating a scratch window that uses the syntax of the configured REPL and helps editing the commands to send.
 
 For a more detailed guide and documentation, review the help page: `:help tmutils.txt`
 
@@ -39,91 +40,10 @@ For a more detailed guide and documentation, review the help page: `:help tmutil
             --"vijaymarupudi/nvim-fzf"
             },
         config = function()
-            require("tmutils").setup()
+            require("tmutils").setup {}
         end
     }
     ```
-
-## Configuration
----
-
-Let's see the default and minimal `tmutils` config:
-
-```lua
-local selectors = require("tmutils.selectors")
-require("tmutils").setup {
-    selector = {
-        selector = selectors.vim_ui_selector
-        },
-    window = {
-        terminal = {
-            direction = "vertical",
-            size = 20,
-            commands = function()
-                return {
-                    ("cd %s"):format(vim.fn.getcwd()),
-                    "clear"
-                    }
-                end
-            },
-        repls = {}
-        }
-    }
-```
-
-The configuration table has the following schema (review `LuaLS` type specification for the type annotations):
-
-```lua
-{
-    --Configuration for UI-based selection.
-    selector = {
-        --The backend used to select options.
-        selector = [[
-        fun(
-            opts: string[],
-            message: string,
-            callback: fun(selected_opt: string): nil
-            ): nil
-        ]]
-        },
-    --Configuration for window management commands.
-    window = {
-        --Configuration for the terminal pane.
-        terminal = {
-            --Direction in which to split the terminal pane.
-            direction = '"vertical" | "horizontal"',
-            --Relative size (in percentage) for the terminal pane.
-            size = 'number',
-            --Function that returns a list of commands to be executed
-            --when launching a new terminal pane.
-            commands = 'fun(): string[]'
-            },
-        repls = {
-            --Assign a key to the repl
-            repl1 = {
-                --Direction in which to split the repl pane.
-                direction = '"vertical" | "horizontal"',
-                --Relative size (in percentage) for the repl pane.
-                size = 'number',
-                --Function that returns a list of commands to be executed
-                --when launching a new repl pane.
-                commands = 'fun(): string[]'
-                },
-            --Assign a key to the repl
-            repl2 = {
-                --Direction in which to split the repl pane.
-                direction = '"vertical" | "horizontal"',
-                --Relative size (in percentage) for the repl pane.
-                size = 'number',
-                --Function that returns a list of commands to be executed
-                --when launching a new repl pane.
-                commands = 'fun(): string[]'
-                },
-            --Create other repls following the same structure.
-            }
-        }
-    }
-```
 
 ## Usage
 ---
@@ -143,17 +63,26 @@ examples of it:
 
     <video src="https://github.com/user-attachments/assets/690b74db-ca71-43d3-ad7e-e760a4c2c149"></video>
 
-    1. Create a new terminal pane: `:help TmutilsWindow`.
+    1. Create a new terminal pane: `:help :TmutilsWindow`.
     2. Send a range of lines to the terminal: `:help :TmutilsSend`.
-    3. Delete the terminal: `:help TmutilsWindow`.
+    3. Delete the terminal: `:help :TmutilsWindow`.
 
 - **Creating a repl pane**:
 
     <video src="https://github.com/user-attachments/assets/73d4f072-cf81-432d-b5d4-bc600573bf7e"></video>
 
-    1. Create a new REPL pane (ensure the `window.repls.{repl}` option is set in your `setup`): `:help TmutilsWindow`.
+    1. Create a new REPL pane (ensure the `window.repls.{repl}` option is set in your `setup`): `:help :TmutilsWindow`.
     2. Send a range of lines to the REPL: `:help :TmutilsSend`.
-    3. Delete the REPL: `:help TmutilsWindow`.
+    3. Delete the REPL: `:help :TmutilsWindow`.
+
+- **Using a scratch window**:
+
+    <video src="https://github.com/user-attachments/assets/72a1b5b1-d8b8-4896-9e29-8773e0537047"></video>
+
+    1. Create a terminal or a REPL pane (ensure the `window.repls.{repl}` option is set in your `setup`): `:help :TmutilsWindow`.
+    2. Send a range of lines to the REPL: `:help :TmutilsSend`.
+    3. Toggle the scratch window: `:help :TmutilsScratchToggle`
+    4. Delete the terminal or REPL: `:help :TmutilsWindow`
 
 - **Literate programming**:
 
@@ -271,3 +200,75 @@ examples of it:
 
     6. Open a new repl using `<leader>r`, navigate between cells using `:cnext`
     and `:cprev`, and execute them using `<leader>x`.
+
+## Configuration
+---
+
+The configuration table has the following schema (review `LuaLS` type specification for the type annotations):
+
+```lua
+{
+    --Configuration for UI-based selection.
+    selector = {
+        --The backend used to select options.
+        selector = [[
+        fun(
+            opts: string[],
+            message: string,
+            callback: fun(selected_opt: string): nil
+            ): nil
+        ]]
+        },
+    --Configuration for the scratch window.
+    scratch = {
+        --Scratch window width.
+        width = "integer"
+        --Scratch window height.
+        height = "integer"
+        --Scratch window center col.
+        col = "integer",
+        --Scratch window center row.
+        row = "integer",
+        --Scratch window border.
+        border = "none" | "single" | "double" | "rounded" | "solid" | "shadow",
+        --Scratch window title position.
+        title_pos = "center" | "left" | "right"
+        },
+    --Configuration for window management commands.
+    window = {
+        --Configuration for the terminal pane.
+        terminal = {
+            --Direction in which to split the terminal pane.
+            direction = '"vertical" | "horizontal"',
+            --Relative size (in percentage) for the terminal pane.
+            size = 'number',
+            --Function that returns a list of commands to be executed
+            --when launching a new terminal pane.
+            commands = 'fun(): string[]'
+            },
+        repls = {
+            --Assign a key to the repl
+            repl1 = {
+                --Direction in which to split the repl pane.
+                direction = '"vertical" | "horizontal"',
+                --Relative size (in percentage) for the repl pane.
+                size = 'number',
+                --Function that returns a list of commands to be executed
+                --when launching a new repl pane.
+                commands = 'fun(): string[]'
+                },
+            --Assign a key to the repl
+            repl2 = {
+                --Direction in which to split the repl pane.
+                direction = '"vertical" | "horizontal"',
+                --Relative size (in percentage) for the repl pane.
+                size = 'number',
+                --Function that returns a list of commands to be executed
+                --when launching a new repl pane.
+                commands = 'fun(): string[]'
+                },
+            --Create other repls following the same structure.
+            }
+        }
+    }
+```

@@ -20,9 +20,24 @@ local M = {}
 ---Defines window command configuration.
 ---@alias WindowConfig {terminal: TerminalConfig | nil, repls: {[string]: TerminalConfig} | nil}
 
----Defines scratch configuration.
----@alias ScratchConfig {width: float | nil, height: float | nil}
+---Defines border configuration.
+---@alias Border
+---| "none" # No border.
+---| "single" # Single border.
+---| "double" # Double border.
+---| "rounded" # Rounded border.
+---| "solid" # Solid border.
+---| "shadow" # Shadow border.
 
+---Defines title position configuration.
+---@alias TitlePos
+---| "center" # Centered title.
+---| "left" # Left indented title.
+---| "right" # Right indented title.
+
+---Defines scratch configuration.
+---@alias ScratchConfig {width: integer | nil, height: integer | nil, col: integer | nil, row: integer | nil, border: Border | nil, title_pos: TitlePos | nil}
+---
 ---Defines plugin configuration
 ---@alias Config {selector: SelectorConfig | nil, window: WindowConfig | nil, scratch: ScratchConfig | nil}
 
@@ -60,7 +75,7 @@ M.setup = function (conf)
 			return opts
 		end
 	})
-	vim.api.nvim_create_user_command("TmutilsScratch", function (opts) scratch.toggle_scratch(opts, conf) end, {
+	vim.api.nvim_create_user_command("TmutilsScratchToggle", function (opts) scratch.toggle_scratch(opts, conf) end, {
 		nargs = 0,
 		desc = "Toggles a tmutils scratch."
 	})
